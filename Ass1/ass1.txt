@@ -1,0 +1,2 @@
+CustID Name Product Quantity
+1 Manasvi Shirts 3
