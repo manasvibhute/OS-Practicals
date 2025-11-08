@@ -58,7 +58,7 @@ void SCAN(int req[], int n, int head, int disk, char dir){
             printf(" -> %d", head);
         }
         if (head != 0){
-            total += head;
+            total += absdiff(0, head);
             head = 0;
             printf(" -> 0");
         }
@@ -165,6 +165,7 @@ void CSCAN(int req[], int n, int head, int disk){
 
     head = 0;
     printf(" -> 0");
+    
     for (int i = 0; i < lcnt; i++){
         total += absdiff(left[i], head);
         head = left[i];

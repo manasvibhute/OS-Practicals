@@ -87,15 +87,30 @@ void lru(int pages[], int n, int framesize) {
 
 // 🟨 Optimal Algorithm
 int findOptimal(int pages[], int n, int frame[], int index, int size) {
-    int farthest = -1, pos = -1;
+    int farthest = -1; // stores farthest use index
+    int pos = -1;      // stores index of frame to replace
+
+    // Loop through all pages currently in frame
     for (int i = 0; i < size; i++) {
         int j;
-        for (j = index; j < n; j++)
-            if (frame[i] == pages[j]) break;
-        if (j == n) return i; // Not used again
-        if (j > farthest) { farthest = j; pos = i; }
+
+        // Look ahead in the reference string (from current index)
+        for (j = index; j < n; j++) {
+            if (frame[i] == pages[j])  // check when current frame page will appear again
+                break;
+        }
+
+        // If page never appears again, replace it immediately
+        if (j == n)
+            return i;
+
+        // Otherwise, choose the page that will be used farthest in the future
+        if (j > farthest) {
+            farthest = j;
+            pos = i;
+        }
     }
-    return pos;
+    return pos; // Return index of page to replace
 }
 
 void optimal(int pages[], int n, int framesize) {
@@ -106,8 +121,13 @@ void optimal(int pages[], int n, int framesize) {
     for (int i = 0; i < n; i++) {
         if (!isPresent(frame, framesize, pages[i])) {
             int j;
-            for (j = 0; j < framesize; j++)
-                if (frame[j] == -1) { frame[j] = pages[i]; break; }
+            // Try to fill empty slot first
+            for (j = 0; j < framesize; j++) {
+                if (frame[j] == -1) {
+                    frame[j] = pages[i]; // put new page in empty frame
+                    break;
+                }
+            }
 
             if (j == framesize) {
                 int pos = findOptimal(pages, n, frame, i + 1, framesize);

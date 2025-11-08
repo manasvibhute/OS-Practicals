@@ -3,8 +3,15 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/ipc.h>
-#include <sys/msg.h>
-#include "msg.h"
+
+#define KEY 1234
+#define MSG_SIZE 1024
+
+struct msgbuf {
+    long mtype;
+    char mtext[MSG_SIZE];
+};
+
 
 void to_uppercase(char *str) {
     for (int i = 0; str[i]; i++)

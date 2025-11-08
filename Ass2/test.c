@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-// ---------- Sorting Functions ----------
 void bubbleSort(int arr[], int n) {
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - i - 1; j++) {
@@ -16,15 +15,15 @@ void bubbleSort(int arr[], int n) {
     }
 }
 
-void insertionSortDesc(int arr[], int n) {
-    for (int i = 1; i < n; i++) {
+void insertionSort(int arr[], int n){
+    for(int i=1; i<n; i++){
         int key = arr[i];
-        int j = i - 1;
-        while (j >= 0 && arr[j] < key) {
-            arr[j + 1] = arr[j];
+        int j = i-1;
+        while(j >= 0 && arr[j] < key){
+            arr[j+1] = arr[j];
             j--;
         }
-        arr[j + 1] = key;
+        arr[j+1] = key;
     }
 }
 
@@ -34,94 +33,74 @@ void printArray(int arr[], int n) {
     printf("\n");
 }
 
-// ---------- Main ----------
-int main() {
+int main(){
     int n;
-    printf("Enter number of elements: ");
+    printf("Enter the number of elements: ");
     scanf("%d", &n);
-
     int arr[n];
     printf("Enter elements: ");
     for (int i = 0; i < n; i++)
         scanf("%d", &arr[i]);
-
     int choice;
-
-    while (1) { // infinite loop until user chooses Exit
-        printf("\n==============================\n");
-        printf("Choose Process Behavior:\n");
-        printf("1. Normal Process\n2. Zombie Process\n3. Orphan Process\n4. Exit\n");
-        printf("==============================\n");
-        printf("Enter choice: ");
+    
+    while(1){
+        printf("MENU\n");
+        printf("1.Normal Sort \n2.Zombie Process \n3.Orphan Process \n4.Exit \nEnter your choice: ");
         scanf("%d", &choice);
-
-        if (choice == 4) {
-            printf("\nExiting program...\n");
+        
+        if(choice == 4){
+            printf("Exiting...\n");
             break;
         }
-
+        
         pid_t pid = fork();
-
-        if (pid < 0) {
+        if(pid < 0){
             perror("Fork failed");
             exit(1);
-        }
-
-        if (pid == 0) {
-            // ---------- CHILD ----------
+        }else if(pid == 0){
             printf("\n[Child] PID = %d | PPID = %d\n", getpid(), getppid());
-            printf("[Child] Sorting (Descending): ");
-            insertionSortDesc(arr, n);
+            printf("[Parent] Sorting (Ascending): ");
+            insertionSort(arr, n);
             printArray(arr, n);
-
-            if (choice == 3) {
-                printf("\n[Child] Parent will exit, child sleeping for 10s...\n");
+            
+            if(choice == 3){
+                printf("\n[Child]Parent will exit. Child will sleep for 10 sec");
                 sleep(10);
                 printf("[Child] Woke up. Now orphaned (adopted by init). New PPID = %d\n", getppid());
             }
-
-            printf("\n[Child] Displaying current process info:\n");
+            
+            printf("\n[Child] Display the processes.");
             char cmd[128];
             sprintf(cmd, "ps -elf | grep %d | grep -v grep", getpid());
             system(cmd);
-
-            printf("\n[Child] Exiting now.\n");
+            printf("\nChild exiting now.\n");
             exit(0);
-        } 
-        else {
-            // ---------- PARENT ----------
+        }else{
             printf("\n[Parent] PID = %d | Child PID = %d\n", getpid(), pid);
             printf("[Parent] Sorting (Ascending): ");
             bubbleSort(arr, n);
             printArray(arr, n);
-
-            switch (choice) {
+            
+            switch(choice){
                 case 1:
-                    printf("\n[Parent] Waiting for child (Normal case)...\n");
+                    printf("[Parent] waiting for child\n");
                     wait(NULL);
-                    printf("[Parent] Child finished. Parent exits normally.\n");
+                    printf("Child finished.\n");
                     break;
-
+                
                 case 2:
-                    printf("\n[Parent] Not waiting (Zombie case)...\n");
-                    printf("[Parent] Sleeping for 15s to show zombie state.\n");
-
-                    printf("\n[Before Sleep] Checking process table (you should see <defunct>):\n");
+                    printf("[Parent] Parent sleeps so child can become zombie\n");
                     system("ps -elf | grep defunct");
-
                     sleep(15);
-
-                    printf("\n[After Sleep] Checking again (Zombie should still exist):\n");
+                    printf("[Parent] You can see the zombie state\n");
                     system("ps -elf | grep defunct");
-
-                    printf("\n[Parent] Exiting now (Zombie will be cleaned automatically after parent exit).\n");
                     break;
-
+                
                 case 3:
-                    printf("\n[Parent] Exiting immediately (Orphan case)...\n");
+                    printf("Parent exits immediately\n");
                     exit(0);
                     break;
-
+                
                 default:
                     printf("Invalid choice.\n");
             }

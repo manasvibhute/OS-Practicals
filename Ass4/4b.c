@@ -57,8 +57,8 @@ int main() {
     // pthread_t r[5], w[2];
     int num_readers = 5;
     int num_writers = 2;
-    pthread_t readers[num_readers];
-    pthread_t writers[num_writers];
+    pthread_t r[num_readers];
+    pthread_t w[num_writers];
     int r_ids[5] = {1, 2, 3, 4, 5};
     int w_ids[2] = {1, 2};
 

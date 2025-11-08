@@ -12,10 +12,10 @@ int in = 0, out = 0;
 int counter[BUFFER_SIZE]; // Shared pizza counter 🍕
 
 void print_counter() {
-    printf("\n🍽️  Pizza Counter: [");
+    printf("\n Pizza Counter: [");
     for (int i = 0; i < BUFFER_SIZE; i++) {
         if (counter[i] == 0)
-            printf("🕳️");  // Empty slot
+            printf("_");  // Empty slot
         else
             printf("🍕%d", counter[i]); // Pizza number
         if (i != BUFFER_SIZE - 1) printf(" | ");
@@ -31,7 +31,7 @@ void *producer(void *arg) {
         pthread_mutex_lock(&mutex);    // Enter critical section
 
         counter[in] = pizza;
-        printf("\n👨‍🍳 Mr. Simpson baked Pizza #%d and placed it at position %d\n", pizza, in);
+        printf("\n Mr. Simpson baked Pizza #%d and placed it at position %d\n", pizza, in);
         print_counter();
 
         in = (in + 1) % BUFFER_SIZE;
@@ -52,7 +52,7 @@ void *consumer(void *arg) {
 
         pizza = counter[out];
         counter[out] = 0; // Mark slot empty after Joey eats
-        printf("\n😋 Joey ate Pizza #%d from position %d\n", pizza, out);
+        printf("\n Joey ate Pizza #%d from position %d\n", pizza, out);
         print_counter();
 
         out = (out + 1) % BUFFER_SIZE;
@@ -72,7 +72,7 @@ int main() {
     sem_init(&full, 0, 0);
     pthread_mutex_init(&mutex, NULL);
 
-    printf("\n🍕 === Mr. Simpson and Joey Tribbiani: The Pizza Counter Simulation === 🍕\n");
+    printf("\n === Mr. Simpson and Joey Tribbiani: The Pizza Counter Simulation === \n");
     printf("Counter size: %d pizzas\n\n", BUFFER_SIZE);
 
     pthread_create(&simpson, NULL, producer, NULL);

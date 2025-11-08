@@ -11,7 +11,7 @@ int main() {
     int alloc[n][m], max[n][m], avail[m];
     int need[n][m];
     bool finish[n];
-    int safeSeq[n], index = 0;
+    int safeSeq[n], idx = 0;
 
     // Input Allocation Matrix
     printf("Enter allocation matrix:\n");
@@ -47,7 +47,7 @@ int main() {
     // Find Safe Sequence
     for (int k = 0; k < n; k++) { // repeat until all processes are checked
         for (int i = 0; i < n; i++) {
-            if (finish[i] == 0) {
+            if (finish[i] == false) {
                 bool canExecute = true;
                 for (int j = 0; j < m; j++) {
                     if (need[i][j] > avail[j]) {
@@ -61,7 +61,7 @@ int main() {
                     for (int j = 0; j < m; j++)
                         avail[j] += alloc[i][j];
 
-                    safeSeq[index++] = i;
+                    safeSeq[idx++] = i;
                     finish[i] = true;
                 }
             }
@@ -69,10 +69,13 @@ int main() {
     }
 
     // Check if all processes could finish
-    int safe = 1;
-    for (int i = 0; i < n; i++)
-        if (finish[i] == false)
-            safe = 0;
+    int safe = true;
+    for (int i = 0; i < n; i++){
+        if (finish[i] == false){
+            safe = false;
+            break;
+        }
+    }
 
     if (safe) {
         printf("\nSystem is in a SAFE state.\nSafe sequence: ");
@@ -81,6 +84,5 @@ int main() {
     } else {
         printf("\nSystem is in an UNSAFE state (deadlock possible).\n");
     }
-
     return 0;
 }

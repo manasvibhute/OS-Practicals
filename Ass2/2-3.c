@@ -49,6 +49,5 @@ int main(int argc, char *argv[]) {
         wait(NULL);
         printf("Parent: Child completed. Exiting.\n");
     }
-
     return 0;
 }

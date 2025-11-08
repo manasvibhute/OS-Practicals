@@ -2,8 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ipc.h>
-#include <sys/msg.h>
-#include "msg.h"
+
+#define KEY 1234
+#define MSG_SIZE 1024
+
+struct msgbuf {
+    long mtype;
+    char mtext[MSG_SIZE];
+};
 
 int main() {
     int msgid; //Will store the message queue identifier

@@ -1,0 +1,295 @@
+Perfect — you’ve pasted a good working script already ✅ but it’s currently written for **“customer data”** (CustID, Name, Product, Quantity).
+You just need a few **simple tweaks** for each assignment so it matches what’s asked (address book, phonebook, file manager).
+
+Let’s go one by one 👇
+
+---
+
+## 🟩 **1.1 Address Book (address.txt)**
+
+### Required fields
+
+```
+ID;Name;Phone
+```
+
+### Required functions
+
+1. Search
+2. Add
+3. Remove
+4. Quit
+
+### ✅ **Tweaked Version**
+
+```bash
+#!/bin/bash
+
+file="address.txt"
+
+# Create file if it doesn’t exist
+if [ ! -f "$file" ]; then
+    touch "$file"
+    echo "ID;Name;Phone" > "$file"
+fi
+
+generate_id() {
+    if [ "$(wc -l < "$file")" -le 1 ]; then
+        echo 1
+    else
+        tail -n +2 "$file" | cut -d';' -f1 | sort -n | tail -1 | awk '{print $1+1}'
+    fi
+}
+
+add_entry() {
+    id=$(generate_id)
+    read -p "Enter Name: " name
+    read -p "Enter Phone: " phone
+    echo "$id;$name;$phone" >> "$file"
+    echo "Entry added!"
+}
+
+search_entry() {
+    read -p "Enter Name or Phone to search: " key
+    grep -i "$key" "$file" || echo "No match found."
+}
+
+remove_entry() {
+    read -p "Enter ID to delete: " id
+    if grep -q "^$id;" "$file"; then
+        grep -v "^$id;" "$file" > temp && mv temp "$file"
+        echo "Entry deleted!"
+    else
+        echo "No record found."
+    fi
+}
+
+while true; do
+    echo ""
+    echo "==== Address Book ===="
+    echo "1. Search Address Book"
+    echo "2. Add Entry"
+    echo "3. Remove Entry"
+    echo "4. Quit"
+    read -p "Choice: " ch
+    case $ch in
+        1) search_entry ;;
+        2) add_entry ;;
+        3) remove_entry ;;
+        4) echo "Goodbye!"; exit ;;
+        *) echo "Invalid choice" ;;
+    esac
+done
+```
+
+---
+
+## 🟦 **1.2 Phonebook**
+
+### Required fields
+
+```
+FirstName<TAB>LastName<TAB>Phone
+```
+
+### ✅ **Tweaked Version**
+
+```bash
+#!/bin/bash
+file="phonebook.txt"
+
+if [ ! -f "$file" ]; then
+    touch "$file"
+    echo -e "First\tLast\tPhone" > "$file"
+fi
+
+add_entry() {
+    read -p "Enter First Name: " first
+    read -p "Enter Last Name: " last
+    read -p "Enter Phone: " phone
+    echo -e "$first\t$last\t$phone" >> "$file"
+    echo "Added!"
+}
+
+search_entry() {
+    read -p "Enter Name or Phone to search: " key
+    grep -i "$key" "$file" || echo "No match found."
+}
+
+sort_phonebook() {
+    head -n1 "$file" > temp
+    tail -n +2 "$file" | sort -k2 >> temp
+    mv temp "$file"
+    echo "Sorted by last name."
+}
+
+delete_entry() {
+    read -p "Enter phone or name to delete: " key
+    grep -iv "$key" "$file" > temp && mv temp "$file"
+    echo "Deleted."
+}
+
+while true; do
+    echo ""
+    echo "==== Phonebook ===="
+    echo "1. Add Entry"
+    echo "2. Search Entry"
+    echo "3. Sort by Last Name"
+    echo "4. Delete Entry"
+    echo "5. Exit"
+    read -p "Choice: " ch
+    case $ch in
+        1) add_entry ;;
+        2) search_entry ;;
+        3) sort_phonebook ;;
+        4) delete_entry ;;
+        5) exit ;;
+        *) echo "Invalid choice" ;;
+    esac
+done
+```
+
+---
+
+## 🟨 **1.3 Address Book (Bourne Again Shell with functions & colons)**
+
+### Format
+
+```
+ID:Name:Address:Phone
+```
+
+### ✅ **Tweaked Version**
+
+```bash
+#!/bin/bash
+file="addressbook_colon.txt"
+
+if [ ! -f "$file" ]; then
+    echo "ID:Name:Address:Phone" > "$file"
+fi
+
+generate_id() {
+    if [ "$(wc -l < "$file")" -le 1 ]; then
+        echo 1
+    else
+        tail -n +2 "$file" | cut -d':' -f1 | sort -n | tail -1 | awk '{print $1+1}'
+    fi
+}
+
+add_entry() {
+    id=$(generate_id)
+    read -p "Enter Name: " name
+    read -p "Enter Address: " addr
+    read -p "Enter Phone: " phone
+    echo "$id:$name:$addr:$phone" >> "$file"
+    echo "Entry added."
+}
+
+search_entry() {
+    read -p "Enter keyword to search: " key
+    grep -i "$key" "$file" || echo "No record found."
+}
+
+remove_entry() {
+    read -p "Enter ID to remove: " id
+    grep -v "^$id:" "$file" > temp && mv temp "$file"
+    echo "Entry removed."
+}
+
+display_entries() {
+    column -t -s ":" "$file"
+}
+
+while true; do
+    echo ""
+    echo "==== Address Book (BASH) ===="
+    echo "1. Search"
+    echo "2. Add"
+    echo "3. Remove"
+    echo "4. Display"
+    echo "5. Exit"
+    read -p "Choice: " ch
+    case $ch in
+        1) search_entry ;;
+        2) add_entry ;;
+        3) remove_entry ;;
+        4) display_entries ;;
+        5) exit ;;
+        *) echo "Invalid choice" ;;
+    esac
+done
+```
+
+---
+
+## 🟥 **1.4 File Management Program**
+
+### Required functions
+
+1. Test if file exists
+2. Read file
+3. Delete file
+4. List all files
+
+### ✅ **Tweaked Version**
+
+```bash
+#!/bin/bash
+
+test_file() {
+    read -p "Enter filename: " fname
+    if [ -f "$fname" ]; then
+        echo "File exists."
+    else
+        echo "File not found."
+    fi
+}
+
+read_file() {
+    read -p "Enter filename: " fname
+    if [ -f "$fname" ]; then
+        cat "$fname"
+    else
+        echo "File not found."
+    fi
+}
+
+delete_file() {
+    read -p "Enter filename: " fname
+    if [ -f "$fname" ]; then
+        rm "$fname"
+        echo "File deleted."
+    else
+        echo "File not found."
+    fi
+}
+
+list_files() {
+    echo "Files in current directory:"
+    ls -l
+}
+
+while true; do
+    echo ""
+    echo "==== File Manager ===="
+    echo "1. Test if file exists"
+    echo "2. Read a file"
+    echo "3. Delete a file"
+    echo "4. List files"
+    echo "5. Exit"
+    read -p "Choice: " ch
+    case $ch in
+        1) test_file ;;
+        2) read_file ;;
+        3) delete_file ;;
+        4) list_files ;;
+        5) exit ;;
+        *) echo "Invalid choice" ;;
+    esac
+done
+```
+
+---
+
+Would you like me to combine **1.1, 1.2, 1.3, and 1.4** into a **single multi-option script** (one main menu → choose which task to run)? That’s often what teachers ask in practicals.

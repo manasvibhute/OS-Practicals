@@ -111,7 +111,7 @@ int sjfPreemptive(struct Process p[], int n, struct ExecSegment gantt[], int exe
             s++;
             lastPid = p[idx].pid;
         }
-
+        //execute one time unit at a time
         time++;
         rem[idx]--;
         execOrder[(*execCount)++] = p[idx].pid;
@@ -129,55 +129,105 @@ int sjfPreemptive(struct Process p[], int n, struct ExecSegment gantt[], int exe
 }
 
 // ---------- Round Robin ----------
-int roundRobin(struct Process p[], int n, int tq, struct ExecSegment gantt[], int execOrder[], int *execCount){
-    int queue[100], front = 0, rear = 0, visited[100] = {0}; // visited array ensures processes are added to the queue only once upon arrival.
-    int time = p[0].at, completed = 0, s = 0;
-    *execCount = 0;
-    queue[rear++] = 0;
-    visited[0] = 1;
+/*
+// Main loop: run until all processes are completed
+// Case 1: If queue is empty, CPU is idle
+    // find the next process that will arrive
+    // if no more processes are left to arrive, break
+    // move current time to next process's arrival
+    // add all processes that have now arrived
+    // restart main loop
+// Case 2: Dequeue next process and execute it
+    // dequeue process index
+    // find actual execution time (either full time quantum or remaining burst)
+    // record this execution in Gantt chart
+    // record execution order for visualization
+    // decrease remaining burst time of current process
+    // Add all new processes that arrived during this time slice
+    // If process not finished → requeue it at the end
+    // Else process completed → record completion stats
+//return s
+*/
+int roundRobin(struct Process p[], int n, int tq, struct ExecSegment gantt[], int execOrder[], int *execCount) {
+    int queue[100], front = 0, rear = 0, visited[100] = {0};
 
-    while (completed < n){
-        if (front == rear){ // queue empty
+    int time = p[0].at, completed = 0, s = 0;
+
+    *execCount = 0;  // number of execution segments so far
+    queue[rear++] = 0;  // add the first process (index 0) to the queue
+    visited[0] = 1;     // mark it as added
+
+    while (completed < n) {
+        // Case 1: If queue is empty, CPU is idle
+        if (front == rear) {  // queue empty
             int nextArrival = -1;
-            for (int i = 0; i < n; i++){
-                if (!visited[i] && (nextArrival == -1 || p[i].at < nextArrival)) nextArrival = p[i].at;  
+
+            // find the next process that will arrive
+            for (int i = 0; i < n; i++) {
+                if (!visited[i] && (nextArrival == -1 || p[i].at < nextArrival))
+                    nextArrival = p[i].at;
             }
-            if (nextArrival == -1) break;
+
+            // if no more processes are left to arrive, break
+            if (nextArrival == -1)
+                break;
+
+            // move current time to next process's arrival
             time = nextArrival;
+
+            // add all processes that have now arrived
             for (int i = 0; i < n; i++)
-                if (!visited[i] && p[i].at <= time){
+                if (!visited[i] && p[i].at <= time) {
                     queue[rear++] = i;
                     visited[i] = 1;
                 }
-            continue;
+
+            continue; // restart main loop
         }
-        int idx = queue[front++];
+
+        // Case 2: Dequeue next process and execute it
+        int idx = queue[front++];  // dequeue process index
+        // idx points to the process currently running
+
+        // find actual execution time (either full time quantum or remaining burst)
         int exec = (p[idx].remaining > tq) ? tq : p[idx].remaining;
 
+        // record this execution in Gantt chart
         gantt[s].pid = p[idx].pid;
         gantt[s].start = time;
-        time += exec;
+        time += exec;          // advance current time
         gantt[s].end = time;
-        s++;
+        s++;                   // move to next Gantt slot
+
+        // record execution order for visualization
         execOrder[(*execCount)++] = p[idx].pid;
+
+        // decrease remaining burst time of current process
         p[idx].remaining -= exec;
 
+        // Add all new processes that arrived during this time slice
         for (int i = 0; i < n; i++)
-            if (!visited[i] && p[i].at <= time){
-                queue[rear++] = i;
+            if (!visited[i] && p[i].at <= time) {
+                queue[rear++] = i;  // enqueue new arrivals
                 visited[i] = 1;
             }
-        if (p[idx].remaining > 0)
-            queue[rear++] = idx; //requeue it
-        else{
-            p[idx].ct = time;
-            p[idx].tat = time - p[idx].at;
-            p[idx].wt = p[idx].tat - p[idx].bt;
-            completed++;
+
+        // If process not finished → requeue it at the end
+        if (p[idx].remaining > 0) {
+            queue[rear++] = idx;  // requeue the same process for its next time slice
+        }
+        // Else process completed → record completion stats
+        else {
+            p[idx].ct = time;     
+            p[idx].tat = time - p[idx].at; 
+            p[idx].wt = p[idx].tat - p[idx].bt;  
+            completed++;                 
         }
     }
+    // return total number of Gantt chart segments
     return s;
 }
+
 
 // ---------- Priority Non-Preemptive ----------
 int priorityNonPreemptive(struct Process p[], int n, struct ExecSegment gantt[]){

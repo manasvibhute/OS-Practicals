@@ -1,43 +1,52 @@
- #include <stdio.h>
- #include <stdlib.h>
- #include <sys/ipc.h>
- #include <sys/shm.h>
- #include <string.h>
- 
-#define SHM_KEY 1234       // Key for shared memory
- #define SHM_SIZE 1024      // Size of shared memory
- 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <string.h>
+#include <unistd.h>
+
+#define KEY 1234
+#define SIZE 1024
+
 int main() {
     int shmid;
     char *shm_ptr;
- 
-    // Create shared memory segment
-    shmid = shmget(SHM_KEY, SHM_SIZE, IPC_CREAT | 0666);
+
+    // Create shared memory
+    shmid = shmget(KEY, SIZE, IPC_CREAT | 0666);
     if (shmid < 0) {
         perror("shmget failed");
         exit(EXIT_FAILURE);
     }
- 
-    // Attach shared memory to server's address space
+
+    // Attach shared memory
     shm_ptr = (char *) shmat(shmid, NULL, 0);
     if (shm_ptr == (char *) -1) {
         perror("shmat failed");
         exit(EXIT_FAILURE);
     }
- 
-    // Write message to shared memory
-    char message[] = "Hello Client! Message from Server.How are you?";
-    strncpy(shm_ptr, message, SHM_SIZE);
- 
-    printf("Server: Message written to shared memory.\n");
-    printf("Press Enter to detach and exit...\n");
-    getchar();
- 
-    // Detach shared memory
+
+    printf("Server: Writing message to shared memory...\n");
+    sleep(1); // Simulate delay
+
+    // Write message
+    char message[] = "Hello Client! Message from Server. How are you?";
+    strcpy(shm_ptr + 1, message); // Leave first byte for sync flag
+
+    shm_ptr[0] = '1'; // Flag to indicate message ready
+    printf("Server: Message written, waiting for client to read...\n");
+
+    // Wait until client sets flag to '2'
+    while (shm_ptr[0] != '2') {
+        sleep(1);
+    }
+
+    printf("Server: Client has read the message.\n");
+
+    // Detach and remove
     shmdt(shm_ptr);
- 
-    // Optional: Remove shared memory segment
-    // shmctl(shmid, IPC_RMID, NULL);
- 
+    shmctl(shmid, IPC_RMID, NULL);
+
     return 0;
 }
+
